@@ -1,0 +1,26 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend.Dockerfile
+    ports:
+      - "8010:8010"
+    environment:
+      - DEBUG=False
+      - BACKEND_CORS_ORIGINS=["http://localhost:9010","http://127.0.0.1:9010"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8010/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend.Dockerfile
+    ports:
+      - "9010:9010"
+    depends_on:
+      - backend
+    restart: unless-stopped

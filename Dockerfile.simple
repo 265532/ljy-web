@@ -1,0 +1,41 @@
+# 第一阶段：构建前端
+FROM node:18-alpine AS frontend
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+RUN npm run build
+
+# 第二阶段：构建后端
+FROM python:3.10-slim
+
+WORKDIR /app
+
+RUN pip install --upgrade pip && \
+    pip install --timeout=60 --index-url https://pypi.org/simple fastapi && \
+    pip install --timeout=60 --index-url https://pypi.org/simple uvicorn[standard] && \
+    pip install --timeout=60 --index-url https://pypi.org/simple pydantic-settings && \
+    pip install --timeout=60 --index-url https://pypi.org/simple sqlalchemy && \
+    pip install --timeout=60 --index-url https://pypi.org/simple python-jose[cryptography] && \
+    pip install --timeout=60 --index-url https://pypi.org/simple passlib[bcrypt] && \
+    pip install --timeout=60 --index-url https://pypi.org/simple python-multipart && \
+    pip install --timeout=60 --index-url https://pypi.org/simple python-dotenv && \
+    pip install --timeout=60 --index-url https://pypi.org/simple requests && \
+    pip install --timeout=60 --index-url https://pypi.org/simple httpx && \
+    pip install --timeout=60 --index-url https://pypi.org/simple email-validator
+
+COPY backend/ .
+
+COPY --from=frontend /app/dist ./static
+# 去除这行，防止源码根目录的原始 index.html 覆盖了打包后的 index.html
+# COPY --from=frontend /app/index.html ./static/index.html
+# COPY --from=frontend /app/img ./static/img (原样注释掉)
+
+EXPOSE 8010
+
+ENV PYTHONUNBUFFERED=1
+
+CMD ["python", "main.py"]

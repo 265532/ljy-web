@@ -1,0 +1,13 @@
+node_modules
+dist
+.git
+.gitignore
+.env
+*.md
+backend/__pycache__
+backend/.env
+*.pyc
+.pytest_cache
+.vscode
+*.log
+npm-debug.log
